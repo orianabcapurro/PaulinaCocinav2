@@ -1,0 +1,668 @@
+/* ============================================================================
+ * responsive-overrides.css
+ * ----------------------------------------------------------------------------
+ * Proyecto: Paulina Cocina · "Puede Fallar"
+ * Propósito: Capa de overrides responsive aplicada sobre el bundle compilado
+ *            de Vite (assets/index-D3gF_Q4t.css). Este archivo introduce el
+ *            sistema de unidades fluidas (clamp/vw/min/max), breakpoints
+ *            expandidos (480, 768, 1024, 1440, 1920, 2560) y los ajustes de
+ *            composición del hero, navbar, tipografía y grids necesarios para
+ *            que el sitio escale correctamente entre 320px y 4K.
+ *
+ * Carga: este archivo se enlaza en index.html mediante <link rel="stylesheet">
+ *        INMEDIATAMENTE DESPUÉS del <link> que carga
+ *        ./assets/index-D3gF_Q4t.css, de modo que la cascade aplique estos
+ *        overrides después del bundle.
+ *
+ * IMPORTANTE — NO MODIFICAR EL BUNDLE COMPILADO:
+ *        El archivo assets/index-D3gF_Q4t.css es generado por Vite y NO debe
+ *        ser editado bajo ninguna circunstancia. Cualquier ajuste responsive
+ *        vive exclusivamente en este archivo. Editar el bundle implica perder
+ *        los cambios en un futuro re-build.
+ *
+ * ----------------------------------------------------------------------------
+ * Browser support objetivo (soporte primario):
+ *   - Chrome  79+
+ *   - Firefox 75+
+ *   - Safari  13.1+
+ *   - Edge    79+
+ *
+ * Estos targets garantizan soporte nativo de clamp(), min(), max() y
+ * aspect-ratio. En navegadores fuera de este rango, los fallbacks estáticos
+ * descritos abajo mantienen el sitio legible aunque sin escalado fluido.
+ *
+ * ----------------------------------------------------------------------------
+ * Convención de fallback (Requirement 9):
+ *   CADA regla que use clamp() (o consuma una custom property cuyo valor sea
+ *   un clamp()) DEBE ir precedida inmediatamente arriba por una declaración
+ *   estática con el término mínimo del clamp() expresado en su unidad
+ *   original (rem cuando aplica, px cuando el clamp original esté en px).
+ *   Ejemplo canónico:
+ *
+ *       .hero-title {
+ *         font-size: 3rem;                                  / * fallback * /
+ *         font-size: clamp(3rem, 8vw + 1rem, 7rem);
+ *       }
+ *
+ *   El navegador antiguo aplica la primera regla y descarta la segunda por no
+ *   entender clamp(); el navegador moderno sobreescribe con la segunda. No se
+ *   debe usar @supports para esto: la cascade ya provee el fallback gratis.
+ *
+ *   Los fallbacks NO se declaran sobre los tokens en :root (las custom
+ *   properties son sustituidas por su valor en cada sitio donde se consumen);
+ *   el fallback va donde el token se consume (font-size, gap, max-width, etc.).
+ *
+ * ----------------------------------------------------------------------------
+ * Tabla de contenidos:
+ *   1. Tokens fluidos en :root
+ *      1.1 Tipografía  (--fs-xs, --fs-sm, --fs-base, --fs-lg, --fs-xl,
+ *                       --fs-2xl, --fs-3xl, --fs-hero)
+ *      1.2 Spacing     (--space-1 .. --space-7)
+ *      1.3 Containers  (--container-narrow, --container-base,
+ *                       --container-wide, --container-xwide)
+ *   2. Container fluido (.container, .container--wide, .container--xwide)
+ *   3. Navbar fluido    (.navbar, .nav-logo, .nav-links, .nav-cta)
+ *   4. Hero — layout y contenedor (.hero, .hero-content)
+ *   5. Hero — imagen Paulina (.hero-image-col, .hero-paulina-img)
+ *   6. Hero — video de fondo (.hero-video-wrapper, ::after, video)
+ *   7. Tipografía fluida (consumo de --fs-* en títulos y textos)
+ *   8. Grids responsivas (.features-grid, .steps-grid, .prizes-grid)
+ *   9. Fallbacks de compatibilidad (distribuidos INLINE antes de cada
+ *      consumo de clamp() — no constituyen una sección física separada)
+ *  10. (reservado)
+ *  11. Defensivo — sin overflow horizontal (body { overflow-x: hidden })
+ *  12. Media queries por breakpoint (480, 768, 1024, 1440, 1920, 2560)
+ *
+ * ----------------------------------------------------------------------------
+ * Trazabilidad: este archivo implementa los Requirements 1–10 del spec
+ *               .kiro/specs/diseno-responsive-completo/requirements.md.
+ * ============================================================================ */
+
+/* ============================================================================
+ * 1. TOKENS FLUIDOS
+ * ----------------------------------------------------------------------------
+ * Sistema de Custom Properties definidas en :root. Todas las reglas del
+ * override consumen estos tokens en lugar de valores px fijos para sizing y
+ * spacing primario. Los valores se toman tal cual del design.md y mantienen
+ * la fórmula clamp(min, Xvw + Yrem, max) para tipografía/spacing y
+ * min(Xvw, Ypx) para containers.
+ *
+ * NOTA SOBRE FALLBACKS: los fallbacks estáticos NO se declaran aquí. Las
+ * custom properties son sustituidas por su valor literal en cada lugar donde
+ * se consumen, por lo que el fallback se inyecta INLINE en cada consumo
+ * (secciones 2-8) según la convención del Requirement 9.
+ * ========================================================================== */
+
+:root {
+  /* Tipografía fluida (Requirements 1.1, 6.1) */
+  --fs-xs:    clamp(0.75rem, 0.5vw + 0.65rem, 0.9rem);
+  --fs-sm:    clamp(0.85rem, 0.6vw + 0.75rem, 1rem);
+  --fs-base:  clamp(0.95rem, 0.7vw + 0.85rem, 1.15rem);
+  --fs-lg:    clamp(1.1rem, 1vw + 0.95rem, 1.4rem);
+  --fs-xl:    clamp(1.3rem, 1.5vw + 1rem, 1.8rem);
+  --fs-2xl:   clamp(1.6rem, 2.5vw + 1rem, 2.4rem);
+  --fs-3xl:   clamp(2rem, 4vw + 1rem, 3.5rem);
+  --fs-hero:  clamp(3rem, 8vw + 1rem, 7rem);
+
+  /* Spacing fluido (Requirement 1.2) */
+  --space-1: clamp(0.25rem, 0.3vw, 0.5rem);
+  --space-2: clamp(0.5rem, 0.6vw, 1rem);
+  --space-3: clamp(0.75rem, 1vw, 1.5rem);
+  --space-4: clamp(1rem, 1.5vw, 2rem);
+  --space-5: clamp(1.5rem, 2.5vw, 3rem);
+  --space-6: clamp(2rem, 4vw, 5rem);
+  --space-7: clamp(3rem, 6vw, 8rem);
+
+  /* Container widths (Requirement 1.3) */
+  --container-narrow: min(92vw, 1100px);
+  --container-base:   min(92vw, 1400px);
+  --container-wide:   min(95vw, 1600px);
+  --container-xwide:  min(96vw, 1920px);
+}
+
+/* ============================================================================
+ * 2. CONTAINER FLUIDO
+ * ----------------------------------------------------------------------------
+ * Override del contenedor base. Reemplaza el `max-width: 1200px` fijo del
+ * bundle por el token --container-base (consume min(92vw, 1400px)) y aplica
+ * padding lateral fluido vía clamp(). Las variantes --wide y --xwide se
+ * consumen explícitamente como clases adicionales en el HTML.
+ *
+ * Selectores reales en bundle: .container (idéntico al asumido en design.md).
+ *
+ * Specificity: (0,1,0) igual que el bundle. Por orden de carga (este archivo
+ * va después de index-D3gF_Q4t.css), nuestras reglas ganan sin necesidad de
+ * !important.
+ * ----------------------------------------------------------------------------
+ * Tasks: 3.1, 3.2 — Requirements 1.3, 1.4
+ * ========================================================================== */
+
+.container {
+  /* fallback (Req 9.1): cap razonable en px para --container-base = min(92vw, 1400px).
+   * No se puede expresar 92vw como rem fijo; usar un cap intermedio (1200px) que mantiene
+   * el sitio legible en navegadores sin soporte de min(). */
+  max-width: 1200px;
+  max-width: var(--container-base);
+  margin: 0 auto;
+  /* fallback (Req 9.1): término mínimo del clamp inferior expresado en rem */
+  padding: 0 1rem;
+  padding: 0 clamp(1rem, 3vw, 3rem);
+}
+
+.container--wide {
+  /* fallback (Req 9.1): cap razonable en px para --container-wide = min(95vw, 1600px) */
+  max-width: 1280px;
+  max-width: var(--container-wide);
+}
+
+.container--xwide {
+  /* fallback (Req 9.1): cap razonable en px para --container-xwide = min(96vw, 1920px) */
+  max-width: 1600px;
+  max-width: var(--container-xwide);
+}
+
+/* ============================================================================
+ * 3. NAVBAR FLUIDO
+ * ----------------------------------------------------------------------------
+ * Padding, gap y tipografía del navbar escalados con clamp() para que el
+ * navbar respire entre 320px y 4K sin saltos abruptos.
+ *
+ * Selectores reales en bundle: .navbar, .nav-logo, .nav-links, .nav-links a,
+ * .nav-cta (todos idénticos a los asumidos en design.md).
+ *
+ * El bundle define `.nav-links { display: none }` por defecto y lo cambia a
+ * `display: flex` dentro de `@media(min-width:768px)`. NO tocamos `display`
+ * aquí: nuestro `gap` aplica una vez visible. Idem para `.navbar` que el
+ * bundle abre a `padding: 1.2rem 3rem` en >=768px; nuestro clamp toma el
+ * relevo por orden de cascade.
+ * ----------------------------------------------------------------------------
+ * Tasks: 7.1, 7.2, 7.3, 7.4, 7.5 — Requirements 1.4, 1.5, 6.5
+ * ========================================================================== */
+
+.navbar {
+  /* fallback (Req 9.1): mínimos del par de clamps */
+  padding: 0.8rem 1rem;
+  padding: clamp(0.8rem, 1.5vw, 1.5rem) clamp(1rem, 4vw, 4rem);
+}
+
+.nav-logo {
+  /* fallback (Req 9.1): mínimo del clamp tipográfico */
+  font-size: 1.1rem;
+  font-size: clamp(1.1rem, 1.2vw + 0.5rem, 1.6rem);
+}
+
+.nav-links {
+  /* fallback (Req 9.1): mínimo del clamp del gap */
+  gap: 1rem;
+  gap: clamp(1rem, 2vw, 3rem);
+}
+
+.nav-links a {
+  /* fallback (Req 9.1): mínimo del clamp tipográfico */
+  font-size: 0.75rem;
+  font-size: clamp(0.75rem, 0.6vw + 0.6rem, 0.95rem);
+}
+
+.nav-cta {
+  /* fallback (Req 9.1): mínimos del par de clamps de padding */
+  padding: 0.5rem 1rem;
+  padding: clamp(0.5rem, 0.6vw + 0.4rem, 0.9rem) clamp(1rem, 1.5vw + 0.5rem, 2rem);
+}
+
+/* ============================================================================
+ * 4. HERO — LAYOUT Y CONTENEDOR
+ * ----------------------------------------------------------------------------
+ * Reformula la composición del hero: deja al .hero como contenedor flex
+ * vertical alineado al pie (la imagen "se planta" abajo) y al .hero-content
+ * como columna fluida que crece hasta --container-wide.
+ *
+ * Selectores reales en bundle: .hero, .hero-content (idénticos a design.md).
+ *
+ * !important en propiedades selectas:
+ *   El bundle declara dentro de `@media(min-width:768px)` reglas con
+ *   !important sobre .hero (padding, align-items) y .hero-content
+ *   (flex-direction, gap, max-width). Para garantizar que nuestro override
+ *   gane en >=768px sin recurrir a media queries de breakpoint width (las
+ *   cuales se introducen recién en task 12), forzamos !important SÓLO en las
+ *   propiedades específicas afectadas. Requirement 10.5.
+ * ----------------------------------------------------------------------------
+ * Tasks: 4.1, 4.2 — Requirements 4.1, 4.2, 4.3, 4.4, 4.5, 3.4
+ * ========================================================================== */
+
+.hero {
+  position: relative;
+  /* fallback (Req 9.1): mínimo del clamp de min-height */
+  min-height: 640px;
+  min-height: clamp(640px, 100vh, 1100px);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* !important vence: bundle @media(min-width:768px){.hero{align-items:flex-end !important}} */
+  align-items: center !important;
+  /* fallback (Req 9.1): mínimos del par de clamps de padding (mantiene !important) */
+  padding: 5rem 1rem 0 !important;
+  /* !important vence: bundle @media(min-width:768px){.hero{padding:6rem 3rem 0 !important}} */
+  padding: clamp(5rem, 8vh, 8rem) clamp(1rem, 4vw, 4rem) 0 !important;
+  overflow: hidden;
+}
+
+.hero-content {
+  width: 100%;
+  /* fallback (Req 9.1): cap razonable en px para --container-wide = min(95vw, 1600px) (mantiene !important) */
+  max-width: 1280px !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-content{max-width:1280px !important}} */
+  max-width: var(--container-wide) !important;
+  display: flex;
+  /* !important vence: bundle @media(min-width:768px){.hero-content{flex-direction:row !important}} */
+  flex-direction: column !important;
+  /* fallback (Req 9.1): mínimo del clamp del token --space-4 (mantiene !important) */
+  gap: 1rem !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-content{gap:2rem !important}} */
+  gap: var(--space-4) !important;
+}
+
+/* ============================================================================
+ * 5. HERO — IMAGEN PAULINA
+ * ----------------------------------------------------------------------------
+ * Imagen de Paulina anclada al pie del hero, con dimensionado fluido por
+ * clamp() para evitar tanto un retrato microscópico en mobile como uno
+ * gigante en pantallas 4K. La columna usa flex-basis fluido (40%–50%).
+ *
+ * Selectores reales en bundle: .hero-image-col, .hero-paulina-img (idénticos
+ * a design.md).
+ *
+ * !important: el bundle reescribe estas reglas dentro de
+ * `@media(min-width:768px)` con !important en flex-basis, max-width,
+ * max-height, width, height, display, align-self y align-items. Para
+ * mantener el sizing fluido (no fijo en 520px / 45%) en >=768px, forzamos
+ * !important en cada propiedad afectada. Requirement 10.5.
+ * ----------------------------------------------------------------------------
+ * Tasks: 5.1, 5.2 — Requirements 3.2, 3.3, 3.4, 3.5
+ * ========================================================================== */
+
+.hero-image-col {
+  /* fallback (Req 9.1): mínimo del clamp de flex-basis (mantiene !important) */
+  flex: 0 0 40% !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-image-col{flex:0 0 45% !important}} */
+  flex: 0 0 clamp(40%, 45vw, 50%) !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-image-col{align-self:flex-end !important}} */
+  align-self: flex-end !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-image-col{display:flex !important}} */
+  display: flex !important;
+  justify-content: center;
+  /* !important vence: bundle @media(min-width:768px){.hero-image-col{align-items:flex-end !important}} */
+  align-items: flex-end !important;
+}
+
+.hero-paulina-img {
+  /* width:100% y height:auto cumplen doble función: composición normal y
+   * red de seguridad ante navegadores SIN SOPORTE DE `aspect-ratio`
+   * (Requirement 9.3 / Task 10.2). Si un futuro selector usara aspect-ratio
+   * para esta imagen, estas dos declaraciones garantizan que la imagen
+   * mantenga proporciones intrínsecas vía width: 100% + height: auto.
+   * Mantienen !important porque el bundle redeclara estas propiedades con
+   * !important dentro de @media(min-width:768px). */
+  /* !important vence: bundle @media(min-width:768px){.hero-paulina-img{width:100% !important}} */
+  width: 100% !important;
+  /* fallback (Req 9.1): mínimo del clamp de max-width en su unidad original (px) */
+  max-width: 280px !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-paulina-img{max-width:520px !important}} */
+  max-width: clamp(280px, 38vw, 720px) !important;
+  /* fallback (Req 9.1): mínimo del clamp de max-height en su unidad original (px) */
+  max-height: 420px !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-paulina-img{max-height:none !important}} */
+  max-height: clamp(420px, 70vh, 900px) !important;
+  /* !important vence: bundle @media(min-width:768px){.hero-paulina-img{height:auto !important}} */
+  height: auto !important;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* ============================================================================
+ * 6. HERO — VIDEO DE FONDO
+ * ----------------------------------------------------------------------------
+ * Video de fondo absolutamente posicionado, cubriendo todo el .hero. Se usa
+ * `inset: 0` (shorthand moderno) en lugar de top/right/bottom/left:0. El
+ * pseudo-elemento ::after añade un degradé sutil que mejora el contraste del
+ * texto sobre el video. La media query de aspect-ratio reposiciona el video
+ * en ultra-wide para que el rostro de Paulina no quede demasiado alto.
+ *
+ * Selectores reales en bundle: .hero-video-wrapper, .hero-video-wrapper video
+ * (idénticos a design.md). El bundle no define ::after sobre el wrapper, así
+ * que nuestra regla simplemente se agrega.
+ *
+ * Specificity: igual al bundle, sin !important (el bundle no usa !important
+ * en estos selectores). Orden de carga garantiza el override.
+ *
+ * NOTA aspect-ratio: la media query `(min-aspect-ratio: 21/9)` es la ÚNICA
+ * MQ permitida en este lote (las breakpoints de width se agregan en task 12).
+ *
+ * NOTA fallbacks: esta sección NO usa clamp() en ninguna regla, por lo que
+ * no requiere fallbacks estáticos previos.
+ * ----------------------------------------------------------------------------
+ * Tasks: 6.1, 6.2, 6.3, 6.4 — Requirements 5.1, 5.2, 5.3, 5.4, 5.5
+ * ========================================================================== */
+
+.hero-video-wrapper {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.hero-video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.hero-video-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.15) 60%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+}
+
+@media (min-aspect-ratio: 21/9) {
+  .hero-video-wrapper video {
+    object-position: center 40%;
+  }
+}
+
+/* ============================================================================
+ * 7. TIPOGRAFÍA FLUIDA
+ * ----------------------------------------------------------------------------
+ * Aplica los tokens --fs-* sobre los selectores de títulos y descripciones
+ * existentes. Cada token es un clamp() definido en :root (sección 1), así
+ * todas las pantallas escalan a partir de un único punto de control.
+ *
+ * Selectores reales en bundle: .hero-title, .hero-subtitle, .section-title,
+ * .feature-title, .prize-card h3, .step h3, .feature-desc, .prize-card p,
+ * .step p (todos idénticos a los asumidos en design.md).
+ *
+ * Specificity: en los selectores agrupados (8.4 y 8.5), .prize-card h3 y
+ * .step h3 son (0,1,1) — igual que en el bundle, así que orden de carga
+ * resuelve a favor nuestro. .feature-title y .feature-desc son (0,1,0).
+ * Sin !important.
+ * ----------------------------------------------------------------------------
+ * Tasks: 8.1, 8.2, 8.3, 8.4, 8.5 — Requirements 6.1, 6.2, 6.3, 6.4, 1.4
+ * ========================================================================== */
+
+.hero-title {
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --fs-hero */
+  font-size: 3rem;
+  font-size: var(--fs-hero);
+}
+
+.hero-subtitle {
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --fs-base */
+  font-size: 0.95rem;
+  font-size: var(--fs-base);
+  /* fallback (Req 9.1): mínimo del clamp de max-width en su unidad original (px) */
+  max-width: 280px;
+  max-width: clamp(280px, 30vw, 520px);
+}
+
+.section-title {
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --fs-3xl */
+  font-size: 2rem;
+  font-size: var(--fs-3xl);
+}
+
+.feature-title,
+.prize-card h3,
+.step h3 {
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --fs-xl */
+  font-size: 1.3rem;
+  font-size: var(--fs-xl);
+}
+
+.feature-desc,
+.prize-card p,
+.step p {
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --fs-sm */
+  font-size: 0.85rem;
+  font-size: var(--fs-sm);
+}
+
+/* ============================================================================
+ * 8. GRIDS RESPONSIVAS
+ * ----------------------------------------------------------------------------
+ * Reemplaza los grids fijos del bundle (1fr en mobile, repeat(2,1fr) a 768px,
+ * repeat(4,1fr) a 1024px) por `repeat(auto-fit, minmax(clamp(...), 1fr))`,
+ * lo cual permite que las columnas se acomoden orgánicamente sin breakpoints
+ * arbitrarios. El gap también pasa a ser fluido vía --space-*.
+ *
+ * Selectores reales en bundle: .features-grid, .steps-grid, .prizes-grid
+ * (todos idénticos a design.md).
+ *
+ * Specificity: (0,1,0). El bundle declara estos grids tanto en root como
+ * dentro de `@media(min-width:768px)` y `@media(min-width:1024px)` SIN
+ * !important. Por orden de carga (nuestro archivo cargado después), nuestras
+ * declaraciones ganan en todos los anchos. Sin !important.
+ * ----------------------------------------------------------------------------
+ * Tasks: 9.1, 9.2, 9.3 — Requirements 7.1, 7.2, 7.3, 7.5
+ * ========================================================================== */
+
+.features-grid {
+  display: grid;
+  /* fallback (Req 9.1): minmax sin clamp con el mínimo en px (auto-fit es
+   * más antiguo que clamp() — se mantiene activo aunque clamp falle) */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 22vw, 320px), 1fr));
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --space-4 */
+  gap: 1rem;
+  gap: var(--space-4);
+}
+
+.steps-grid {
+  display: grid;
+  /* fallback (Req 9.1): minmax sin clamp con el mínimo en px */
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(220px, 20vw, 280px), 1fr));
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --space-4 */
+  gap: 1rem;
+  gap: var(--space-4);
+}
+
+.prizes-grid {
+  display: grid;
+  /* fallback (Req 9.1): minmax sin clamp con el mínimo en px */
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(clamp(260px, 24vw, 360px), 1fr));
+  /* fallback (Req 9.1): mínimo del clamp resuelto por --space-5 */
+  gap: 1.5rem;
+  gap: var(--space-5);
+}
+
+/* ============================================================================
+ * 11. DEFENSIVO — SIN OVERFLOW HORIZONTAL
+ * ----------------------------------------------------------------------------
+ * Salvaguarda contra cualquier elemento descendiente que pudiera declarar un
+ * ancho superior al viewport (imágenes con width fijo, embeds, sliders, etc).
+ * Aplicar `overflow-x: hidden` directamente al body garantiza que el sitio
+ * nunca muestre scroll horizontal en NINGÚN ancho de viewport, cumpliendo la
+ * Property 7 / Requirement 8 a nivel global.
+ *
+ * Esta regla se ubica ANTES del bloque de media queries (sección 12) para
+ * que aplique en todos los anchos sin necesidad de redeclararla por
+ * breakpoint.
+ *
+ * Trade-off conocido: anular el scroll horizontal a nivel body bloquearía
+ * `position: sticky` con scroll horizontal local; el sitio actual no usa ese
+ * patrón, así que no hay regresión.
+ * ----------------------------------------------------------------------------
+ * Tasks: 13.1 — Requirements 8.1, 8.2, 8.3
+ * ========================================================================== */
+
+body {
+  /* Defensivo: nunca permitir scroll horizontal del viewport (Req 8.1). */
+  overflow-x: hidden;
+}
+
+/* ============================================================================
+ * 12. MEDIA QUERIES POR BREAKPOINT
+ * ----------------------------------------------------------------------------
+ * Cada media query introduce SÓLO cambios de composición que las unidades
+ * fluidas no pueden expresar por sí solas (cambios de flex-direction,
+ * paddings cualitativamente más generosos, gaps mayores, caps de defensa).
+ *
+ * NO se duplican aquí reglas que ya están cubiertas por los clamp() de las
+ * secciones 1-8: las propiedades fluidas escalan solas y agregar reglas
+ * redundantes solo introduciría ruido y posibles inconsistencias.
+ *
+ * Orden ascendente (mobile-first), tomando como base las reglas de las
+ * secciones 1-8 (que aplican siempre) y aplicando ajustes incrementales.
+ * ----------------------------------------------------------------------------
+ * Tasks: 12.1, 12.2, 12.3, 12.4, 12.5, 12.6 — Requirements 2.1, 2.2, 2.3,
+ *        2.4, 3.5, 4.1-4.4, 6.1, 10.5
+ * ========================================================================== */
+
+/* ----- 12.1 — Breakpoint 480px (large mobile) ------------------------------
+ * Cambio de composición: paddings laterales más generosos en el hero a partir
+ * de mobile grande. La fórmula sube el mínimo lateral de 1rem a 1.5rem y
+ * abre el techo a 4rem (vs 4rem en base — mismo techo pero rampa de subida
+ * más rápida en este rango). NO se ajusta tipografía (la cubre el clamp).
+ *
+ * Mantiene !important para no perder frente al bundle dentro de
+ * @media(min-width:768px); ver sección 4.
+ * Requirements: 2.1, 2.2, 2.3
+ * --------------------------------------------------------------------------- */
+@media (min-width: 480px) {
+  .hero {
+    /* fallback (Req 9.1): mínimo del clamp en su unidad original (rem) */
+    padding-inline: 1.5rem !important;
+    padding-inline: clamp(1.5rem, 5vw, 4rem) !important;
+  }
+}
+
+/* ----- 12.2 — Breakpoint 768px (tablet portrait → layout horizontal) -------
+ * Cambio de composición CRÍTICO: el hero pasa de columna apilada a fila
+ * (texto a la izquierda, imagen Paulina a la derecha) y alinea ambas
+ * columnas al borde inferior para que la imagen se "plante" abajo.
+ *
+ * Por qué !important: la sección 4 declaró `.hero-content { flex-direction:
+ * column !important }` (porque el bundle a su vez lo declara con !important
+ * dentro de @media(min-width:768px) — ver comentario en sección 4). Para
+ * vencer ESA declaración con !important desde una media query del propio
+ * override hay que igualar la flag !important; la specificity es la misma
+ * y la cascade resuelve por orden, pero el !important previo bloquea
+ * cualquier declaración no-!important posterior. Por lo tanto, todas las
+ * propiedades aquí llevan !important explícito (Req 10.5).
+ *
+ * Requirements: 2.1, 2.2, 4.1
+ * --------------------------------------------------------------------------- */
+@media (min-width: 768px) {
+  .hero-content {
+    /* Vence !important previo (sección 4 + bundle) — flip a layout horizontal */
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    /* fallback (Req 9.1): mínimo del clamp de --space-5 */
+    gap: 1.5rem !important;
+    gap: var(--space-5) !important;
+  }
+}
+
+/* ----- 12.3 — Breakpoint 1024px (laptop) -----------------------------------
+ * Cambio de composición: a partir de 1024px hay espacio suficiente para
+ * abrir más respiración entre las columnas del hero. Subimos el gap del
+ * hero-content del nivel --space-5 (definido en 12.2) a --space-6 (más
+ * generoso). Las grids ya escalan solas vía auto-fit; no se redeclaran.
+ *
+ * Mantiene !important por consistencia con la cadena previa (4 + 12.2).
+ * Requirements: 2.1, 2.2
+ * --------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  .hero-content {
+    /* fallback (Req 9.1): mínimo del clamp de --space-6 */
+    gap: 2rem !important;
+    gap: var(--space-6) !important;
+  }
+}
+
+/* ----- 12.4 — Breakpoint 1440px (desktop ancho) ----------------------------
+ * Confirmación defensiva: a 1440px+ es donde los problemas conocidos del
+ * bundle aparecen (caps de 1280px / 520px). Reafirmamos explícitamente que
+ * .hero-content sigue usando --container-wide y que .hero respeta el
+ * min-height fluido. Adicionalmente abrimos un padding lateral más cómodo
+ * en el navbar (cambio de composición legítimo no expresable por clamp).
+ *
+ * Esta MQ NO duplica los clamps; solo los re-confirma con la misma fórmula
+ * para que cualquier regla del bundle declarada con !important dentro de
+ * sus propias @media (min-width:1280px+) no tenga oportunidad de ganar.
+ * Requirements: 2.1, 2.2, 4.1, 4.2, 4.3, 4.4
+ * --------------------------------------------------------------------------- */
+@media (min-width: 1440px) {
+  .hero-content {
+    /* fallback (Req 9.1): cap en px para --container-wide */
+    max-width: 1280px !important;
+    /* Defensa explícita contra cualquier override del bundle a partir de 1440 */
+    max-width: var(--container-wide) !important;
+  }
+  .hero {
+    /* fallback (Req 9.1): mínimo del clamp de min-height en su unidad original */
+    min-height: 640px;
+    min-height: clamp(640px, 100vh, 1100px);
+  }
+  .navbar {
+    /* fallback (Req 9.1): mínimo del clamp del padding-inline más generoso */
+    padding-inline: 2rem;
+    padding-inline: clamp(2rem, 4vw, 5rem);
+  }
+}
+
+/* ----- 12.5 — Breakpoint 1920px (FullHD) -----------------------------------
+ * Composición idéntica a 1440 pero con la imagen Paulina llegando al cap
+ * superior de su clamp (38vw a 1920px = 729.6px → recortado a 720px por el
+ * tope). Reafirmamos las reglas críticas para BLINDARLAS contra cualquier
+ * regla de bundle con max-width:1280px o max-width:520px que pudiera ganar
+ * en este rango (Req 10.5).
+ *
+ * Requirements: 2.1, 2.2, 10.5
+ * --------------------------------------------------------------------------- */
+@media (min-width: 1920px) {
+  .hero-content {
+    /* fallback (Req 9.1): cap en px para --container-wide */
+    max-width: 1280px !important;
+    /* Defensa contra reglas heredadas del bundle (max-width: 1280px en .hero-content) */
+    max-width: var(--container-wide) !important;
+  }
+  .hero-paulina-img {
+    /* Defensa contra reglas heredadas del bundle (max-width: 520px en .hero-paulina-img):
+     * reafirmamos el sizing fluido en FullHD+ por si una regla del bundle con !important
+     * en este rango intentara reducirlo. */
+    max-width: 280px !important; /* fallback (Req 9.1) */
+    max-width: clamp(280px, 38vw, 720px) !important;
+    max-height: 420px !important; /* fallback (Req 9.1) */
+    max-height: clamp(420px, 70vh, 900px) !important;
+  }
+}
+
+/* ----- 12.6 — Breakpoint 2560px (2K / QHD) ---------------------------------
+ * Defensa explícita de los caps superiores: a 2560+ las fórmulas fluidas ya
+ * llegaron a su tope, pero declararlos explícitamente garantiza que ningún
+ * cálculo perezoso del navegador o regla heredada los exceda. Idem para el
+ * font-size del título hero, que se queda en 7rem máximo (Req 6.1).
+ *
+ * Requirements: 2.1, 2.2, 3.5, 6.1
+ * --------------------------------------------------------------------------- */
+@media (min-width: 2560px) {
+  .hero-paulina-img {
+    /* Cap superior absoluto en 4K — el clamp ya lo entrega; esta declaración
+     * estática es defensa redundante anti-bundle (Req 3.5, 10.5). */
+    max-width: 720px !important;
+    max-height: 900px !important;
+  }
+  .hero-title {
+    /* Cap superior absoluto en 4K — el clamp ya alcanzó su tope a este ancho;
+     * esta regla estática es defensa redundante (Req 6.1). */
+    font-size: 7rem;
+  }
+}
